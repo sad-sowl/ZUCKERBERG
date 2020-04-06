@@ -8,13 +8,13 @@ import (
 
 func welcome(w http.ResponseWriter, r *http.Request) {
 
-	tmpl := template.Must(template.ParseFiles("begin.html"))
+	tmpl := template.Must(template.ParseFiles("welcome.html"))
 
 	tmpl.Execute(w, nil)
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("regist.html"))
+	tmpl := template.Must(template.ParseFiles("login.html"))
 
 	tmpl.Execute(w, nil)
 }
