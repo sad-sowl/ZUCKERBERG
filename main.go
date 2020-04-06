@@ -6,9 +6,9 @@ import (
 	"net/http"
 )
 
-func welcome(w http.ResponseWriter, r *http.Request) {
+func logup(w http.ResponseWriter, r *http.Request) {
 
-	tmpl := template.Must(template.ParseFiles("welcome.html"))
+	tmpl := template.Must(template.ParseFiles("logup.html"))
 
 	tmpl.Execute(w, nil)
 }
@@ -20,7 +20,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/", welcome)
+	http.HandleFunc("/logup", logup)
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 	http.HandleFunc("/login", login)
 
