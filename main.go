@@ -14,9 +14,18 @@ func logup(w http.ResponseWriter, r *http.Request) {
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
+
 	tmpl := template.Must(template.ParseFiles("login.html"))
 
+	if r.Method == http.MethodPost {
+		fmt.Println("login: ", r.FormValue("login"))
+		fmt.Println("password: ", r.FormValue("password"))
+
+		return
+	}
+
 	tmpl.Execute(w, nil)
+
 }
 
 func main() {
