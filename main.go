@@ -99,6 +99,12 @@ func thanks(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, nil)
 }
 
+func home(w http.ResponseWriter, r *http.Request) {
+	tmpl := template.Must(template.ParseFiles("home.html"))
+
+	tmpl.Execute(w, nil)
+}
+
 func main() {
 
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
@@ -106,6 +112,7 @@ func main() {
 	http.HandleFunc("/logup", logup)
 	http.HandleFunc("/login", login)
 	http.HandleFunc("/thanks", thanks)
+	http.HandleFunc("/home", home)
 
 	fmt.Println("Listening...")
 	http.ListenAndServe(":8000", nil)
