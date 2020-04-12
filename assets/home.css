@@ -1,0 +1,74 @@
+@charset "utf-8";
+/* CSS Document */
+
+body
+{
+	font-family: "Comic Sans MS";
+	background-image: url(images/bg.jpg);
+	background-repeat: repeat ;
+	background-size: 80px 80px ;
+}
+header,
+footer {
+  padding: 25px 0;
+}
+
+header,
+footer,
+nav {
+  margin: 20px 0;
+}
+
+header,
+footer {
+  background-color: rgba(24,213,134,0.70);
+}
+
+section {
+  padding: 10px;
+}
+
+section,
+li {
+  border: 1px dashed white;
+}
+
+nav li {
+  background-color: rgba(9,96,5,0.91);
+  padding: 10px;
+ 
+}
+
+nav ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item{
+  padding: 0;
+  background-color: white;
+}
+
+.item-type-a {
+  padding-top: 45%;
+  background-color: rgba(58,95,2,0.80) ;
+}
+
+.item-type-b {
+  padding-top: 45%;
+  background-color:  rgba(58,95,2,0.80) ;
+}
+
+.item-inner {
+  padding: 25px 0;
+  background-color: rgba(9,96,5,0.91);
+}
+
+
+@media screen and (min-width: 600px) {
+  body {
+    width: 80%;
+    margin: 0 auto;
+  }
+}
