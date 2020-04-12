@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"regexp"
 
+	_ "github.com/go-sql-driver/mysql"
+
 	"github.com/alexedwards/scs"
 	"github.com/alexedwards/scs/memstore"
 )
@@ -26,7 +28,7 @@ func isInDatabase(email string, username string) bool {
 	query := fmt.Sprintf("SELECT * FROM users WHERE email='%s' OR username='%s'", email, username)
 
 	rows, err := db.Query(query)
-	if error != nil {
+	if err != nil {
 		panic(err.Error())
 	}
 
@@ -67,7 +69,7 @@ func logup(w http.ResponseWriter, r *http.Request) {
 
 			defer rows.Close()
 
-			http.Redirect(w, r, "/home", http.StatusPermanentRedirect)
+			http.Redirect(w, r, "/thanks", http.StatusTemporaryRedirect)
 		}
 	}
 
@@ -78,25 +80,44 @@ func login(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("login.html"))
 
 	if r.Method == http.MethodPost {
-		var err error
 
-		//query :=
+		query := fmt.Sprintf("SELECT * FROM users WHERE email = '%s' AND password = '%s'", r.FormValue("email"), r.FormValue("password"))
+		results, err := db.Query(query)
+		if err != nil {
+			panic(err)
+		}
 
-		//rows, err := db.Query(query)
+		defer results.Close()
+
+		if results.Next() == false {
+			fmt.Println("No such user")
+			return
+		}
+
+		for results.Next() {
+
+			var user User
+
+			err := results.Scan(&user.id, &user.email, &user.password, &user.username)
+			if err != nil {
+				panic(err)
+			}
+
+			fmt.Println(user)
+		}
+
+		return
 	}
 
 	tmpl.Execute(w, nil)
 
 }
 
-// func thanks(w http.ResponseWriter, r *http.Request) {
-// 	tmpl := template.Must(template.ParseFiles("thanks.html"))
+func thanks(w http.ResponseWriter, r *http.Request) {
+	tmpl := template.Must(template.ParseFiles("thanks.html"))
 
-// 	if r.Method == http.MethodPost {
-// 		http.Redirect(w, r, "/home", http.StatusPermanentRedirect)
-// 	}
-// 	tmpl.Execute(w, nil)
-// }
+	tmpl.Execute(w, nil)
+}
 
 func home(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("home.html"))
@@ -111,7 +132,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 //stuff for session
 func put(w http.ResponseWriter, r *http.Request) {
-	session.Put(r.Context(), "message", "Hello fucking shit bitch")
+	session.Put(r.Context(), "message", "Hello")
 }
 
 func get(w http.ResponseWriter, r *http.Request) {
@@ -134,7 +155,7 @@ func main() {
 
 	http.HandleFunc("/logup", logup)
 	http.HandleFunc("/login", login)
-	//http.HandleFunc("/thanks", thanks)
+	http.HandleFunc("/thanks", thanks)
 	http.HandleFunc("/home", home)
 	http.HandleFunc("/put", put)
 	http.HandleFunc("/get", get)
