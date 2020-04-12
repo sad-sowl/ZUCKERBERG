@@ -4,10 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 	"html/template"
+	"io"
 	"net/http"
 	"regexp"
 
 	_ "github.com/go-sql-driver/mysql"
+
+	"github.com/alexedwards/scs"
+	"github.com/alexedwards/scs/memstore"
 )
 
 type User struct {
@@ -17,15 +21,10 @@ type User struct {
 	username string
 }
 
+var session *scs.Session
+var db *sql.DB
+
 func isInDatabase(email string, username string) bool {
-
-	db, err := sql.Open("mysql", "root:Qwerty0106@tcp(127.0.0.1:3306)/users")
-	if err != nil {
-		panic(err)
-	}
-
-	defer db.Close()
-
 	query := fmt.Sprintf("SELECT * FROM users WHERE email='%s' OR username='%s'", email, username)
 
 	rows, err := db.Query(query)
@@ -58,17 +57,9 @@ func logup(w http.ResponseWriter, r *http.Request) {
 
 		//Validation of email and passwords
 		if password1 != password2 || !isValidEmail(email) || isInDatabase(email, username) {
-
 			w.WriteHeader(http.StatusUnauthorized)
 		} else {
-
-			db, err := sql.Open("mysql", "root:Qwerty0106@tcp(127.0.0.1:3306)/users")
-			if err != nil {
-				panic(err)
-			}
-
-			defer db.Close()
-
+			//Create new user and add it to database
 			query := fmt.Sprintf("INSERT INTO users(email, password, username) VALUES('%s', '%s', '%s')", email, password1, username)
 
 			rows, err := db.Query(query)
@@ -77,9 +68,8 @@ func logup(w http.ResponseWriter, r *http.Request) {
 			}
 
 			defer rows.Close()
-			//Create new user and add it to database
-			fmt.Printf("Username: %s\nEmail: %s\nPassword: %s", username, email, password1)
-			http.Redirect(w, r, "/thanks", http.StatusPermanentRedirect)
+
+			http.Redirect(w, r, "/thanks", http.StatusTemporaryRedirect)
 		}
 	}
 
@@ -88,6 +78,36 @@ func logup(w http.ResponseWriter, r *http.Request) {
 
 func login(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("login.html"))
+
+	if r.Method == http.MethodPost {
+
+		query := fmt.Sprintf("SELECT * FROM users WHERE email = '%s' AND password = '%s'", r.FormValue("email"), r.FormValue("password"))
+		results, err := db.Query(query)
+		if err != nil {
+			panic(err)
+		}
+
+		defer results.Close()
+
+		if results.Next() == false {
+			fmt.Println("No such user")
+			return
+		}
+
+		for results.Next() {
+
+			var user User
+
+			err := results.Scan(&user.id, &user.email, &user.password, &user.username)
+			if err != nil {
+				panic(err)
+			}
+
+			fmt.Println(user)
+		}
+
+		return
+	}
 
 	tmpl.Execute(w, nil)
 
@@ -102,10 +122,34 @@ func thanks(w http.ResponseWriter, r *http.Request) {
 func home(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("home.html"))
 
+	if r.Method == http.MethodPost {
+
+		fmt.Println(r.FormValue("text"))
+	}
+
 	tmpl.Execute(w, nil)
 }
 
+//stuff for session
+func put(w http.ResponseWriter, r *http.Request) {
+	session.Put(r.Context(), "message", "Hello")
+}
+
+func get(w http.ResponseWriter, r *http.Request) {
+	msg := session.GetString(r.Context(), "message")
+	io.WriteString(w, msg)
+}
+
 func main() {
+
+	var err error
+	db, err = sql.Open("mysql", "root:Qwerty0106@tcp(127.0.0.1:3306)/users")
+	if err != nil {
+		panic(err)
+	}
+
+	session = scs.NewSession()
+	session.Store = memstore.New()
 
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 
@@ -113,6 +157,8 @@ func main() {
 	http.HandleFunc("/login", login)
 	http.HandleFunc("/thanks", thanks)
 	http.HandleFunc("/home", home)
+	http.HandleFunc("/put", put)
+	http.HandleFunc("/get", get)
 
 	fmt.Println("Listening...")
 	http.ListenAndServe(":8000", nil)
