@@ -6,9 +6,6 @@ import (
 	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
-
-	"github.com/alexedwards/scs"
-	"github.com/alexedwards/scs/memstore"
 )
 
 func main() {
@@ -19,18 +16,12 @@ func main() {
 		panic(err)
 	}
 
-	//stuff for session
-	session = scs.NewSession()
-	session.Store = memstore.New()
-
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 
 	http.HandleFunc("/logup", logup)
 	http.HandleFunc("/login", login)
 	http.HandleFunc("/thanks", thanks)
 	http.HandleFunc("/home", home)
-	//http.HandleFunc("/put", put)
-	//http.HandleFunc("/get", get)
 
 	fmt.Println("Listening...")
 	http.ListenAndServe(":8000", nil)
