@@ -9,7 +9,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 
-	"github.com/alexedwards/scs"
+	"github.com/gorilla/sessions"
 )
 
 type User struct {
@@ -19,8 +19,11 @@ type User struct {
 	username string
 }
 
-var session *scs.Session
-var db *sql.DB
+var (
+	db    *sql.DB
+	key   = []byte("pL!,$C@jc)~!4>m%z&Mb;^I7OBW1X")
+	store = sessions.NewCookieStore(key)
+)
 
 func isInDatabase(email string, username string) bool {
 	query := fmt.Sprintf("SELECT * FROM users WHERE email='%s' OR username='%s'", email, username)
@@ -77,13 +80,26 @@ func logup(w http.ResponseWriter, r *http.Request) {
 func login(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("login.html"))
 
+	session, _ := store.Get(r, "UserCookie")
+
 	if r.Method == http.MethodPost {
 
 		var user User
 		err := db.QueryRow("SELECT * FROM users WHERE email = ? AND password = ?", r.FormValue("email"), r.FormValue("password")).Scan(&user.id, &user.email, &user.password, &user.username)
 		if err != nil {
-			panic(err.Error())
+			session.Values["authenticated"] = false
+			session.Save(r, w)
+
+			http.Redirect(w, r, "/login", http.StatusUnauthorized)
 		}
+
+		session.Values["authenticated"] = true
+		session.Values["username"] = user.username
+		session.Values["email"] = user.email
+		session.Values["id"] = user.id
+		session.Values["password"] = user.password
+
+		session.Save(r, w)
 
 		http.Redirect(w, r, "/home", http.StatusPermanentRedirect)
 	}
@@ -95,23 +111,24 @@ func login(w http.ResponseWriter, r *http.Request) {
 func thanks(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("thanks.html"))
 
+	//add button for redirecting to the login page
 	tmpl.Execute(w, nil)
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("home.html"))
 
+	session, _ := store.Get(r, "UserCookie")
+
+	//if user is authorised, read his username and put it in html
+	if auth, ok := session.Values["authenticated"].(bool); auth && ok {
+		fmt.Println("The username is: ", session.Values["username"])
+		//put user data into html file using templates
+	} else {
+		fmt.Println("Not authorised")
+	}
+
 	//user templating here somehow
 
 	tmpl.Execute(w, nil)
 }
-
-//stuff for session
-// func put(w http.ResponseWriter, r *http.Request) {
-// 	session.Put(r.Context(), "message", "Hello")
-// }
-
-// func get(w http.ResponseWriter, r *http.Request) {
-// 	msg := session.GetString(r.Context(), "message")
-// 	io.WriteString(w, msg)
-// }
