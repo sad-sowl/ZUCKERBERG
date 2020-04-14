@@ -81,32 +81,14 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodPost {
 
-		query := fmt.Sprintf("SELECT * FROM users WHERE email = '%s' AND password = '%s'", r.FormValue("email"), r.FormValue("password"))
-		results, err := db.Query(query)
+		var user User
+		err := db.QueryRow("SELECT * FROM users WHERE email = ? AND password = ?", r.FormValue("email"), r.FormValue("password")).Scan(&user.id, &user.email, &user.password, &user.username)
 		if err != nil {
-			panic(err)
+			panic(err.Error())
 		}
 
-		defer results.Close()
-
-		if results.Next() == false {
-			fmt.Println("No such user")
-			return
-		}
-
-		for results.Next() {
-
-			var user User
-
-			err := results.Scan(&user.id, &user.email, &user.password, &user.username)
-			if err != nil {
-				panic(err)
-			}
-
-			fmt.Println(user)
-		}
-
-		return
+		fmt.Println(user)
+		http.Redirect(w, r, "/home", http.StatusPermanentRedirect)
 	}
 
 	tmpl.Execute(w, nil)
@@ -124,7 +106,6 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodPost {
 
-		fmt.Println(r.FormValue("text"))
 	}
 
 	tmpl.Execute(w, nil)
