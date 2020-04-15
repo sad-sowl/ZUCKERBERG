@@ -121,11 +121,17 @@ func home(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, "UserCookie")
 
 	//if user is authorised, read his username and put it in html
-	if auth, ok := session.Values["authenticated"].(bool); auth && ok {
-		fmt.Println("The username is: ", session.Values["username"])
-		//put user data into html file using templates
-	} else {
-		fmt.Println("Not authorised")
+	if auth, ok := session.Values["authenticated"].(bool); !auth || !ok {
+		errPage := template.Must(template.ParseFiles("error.html"))
+
+		err := struct {
+			Message string
+		}{
+			Message: "You need to authorise",
+		}
+
+		errPage.Execute(w, err)
+		return
 	}
 
 	//user templating here somehow
