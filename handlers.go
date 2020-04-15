@@ -13,10 +13,10 @@ import (
 )
 
 type User struct {
-	id       int
-	email    string
-	password string
-	username string
+	ID       int
+	Email    string
+	Password string
+	Username string
 }
 
 var (
@@ -85,7 +85,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 
 		var user User
-		err := db.QueryRow("SELECT * FROM users WHERE email = ? AND password = ?", r.FormValue("email"), r.FormValue("password")).Scan(&user.id, &user.email, &user.password, &user.username)
+		err := db.QueryRow("SELECT * FROM users WHERE email = ? AND password = ?", r.FormValue("email"), r.FormValue("password")).Scan(&user.ID, &user.Email, &user.Password, &user.Username)
 		if err != nil {
 			session.Values["authenticated"] = false
 			session.Save(r, w)
@@ -93,11 +93,11 @@ func login(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/login", http.StatusUnauthorized)
 		}
 
-		session.Values["authenticated"] = true
-		session.Values["username"] = user.username
-		session.Values["email"] = user.email
-		session.Values["id"] = user.id
-		session.Values["password"] = user.password
+		session.Values["Authenticated"] = true
+		session.Values["Username"] = user.Username
+		session.Values["Email"] = user.Email
+		session.Values["ID"] = user.ID
+		session.Values["Password"] = user.Password
 
 		session.Save(r, w)
 
@@ -121,7 +121,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, "UserCookie")
 
 	//if user is authorised, read his username and put it in html
-	if auth, ok := session.Values["authenticated"].(bool); !auth || !ok {
+	if auth, ok := session.Values["Authenticated"].(bool); !auth || !ok {
 		errPage := template.Must(template.ParseFiles("error.html"))
 
 		err := struct {
@@ -135,6 +135,12 @@ func home(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//user templating here somehow
+	user := User{
+		Username: session.Values["Username"].(string),
+		Email:    session.Values["Email"].(string),
+		Password: session.Values["Password"].(string),
+		ID:       session.Values["ID"].(int),
+	}
 
-	tmpl.Execute(w, nil)
+	tmpl.Execute(w, user)
 }
