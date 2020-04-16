@@ -8,18 +8,21 @@ body
 	background-repeat: repeat ;
 	background-size: 80px 80px ;
 }
-header,
+textarea{
+	width: 80%;
+	min-width: 600px;
+	background-color: rgba(255,255,255,0.60)
+}
+textarea,
 footer {
   padding: 25px 0;
 }
-
-header,
+textarea,
 footer,
 nav {
   margin: 20px 0;
 }
 
-header,
 footer {
   background-color: rgba(24,213,134,0.70);
 }
@@ -64,7 +67,12 @@ nav ul {
   padding: 25px 0;
   background-color: rgba(9,96,5,0.91);
 }
-
+h2,
+h3{
+	color: black;
+	background-color: rgba(24,213,134,0.70);
+  padding: 10px;
+}
 
 @media screen and (min-width: 600px) {
   body {
