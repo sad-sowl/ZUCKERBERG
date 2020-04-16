@@ -1,0 +1,13 @@
+@charset "utf-8";
+/* CSS Document */
+
+body
+{
+	font-family: "Comic Sans MS";
+	background-image: url(images/bg.jpg);
+	background-repeat: repeat ;
+	background-size: 80px 80px ;
+}
+h1 {
+	background-color: rgba(252,252,252,0.77);
+}
