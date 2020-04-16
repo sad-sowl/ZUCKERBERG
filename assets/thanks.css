@@ -16,10 +16,26 @@ border-bottom: 3px solid rgba(58,87,15,0.80);
 }
 form 
 {
-	margin: 50% auto;
+	margin: 20% auto;
 	background: rgba(123,170,52,0.76);
 	width: 550px;
 	height: 250px;
 	padding: 20px;
 	box-shadow: 2px 2px 5px rgba(0,0,0,0.82);
+}
+button{
+	font-family: "Comic Sans MS";
+	cursor: pointer;
+	padding: 10px 20px;
+	height: 40px;
+	color:aliceblue;
+	background: rgba(21,73,3,1.00);
+	border: none;
+	text-transform: uppercase;
+	font-size: 15px;
+	box-shadow: 2px 2px 5px rgba(0,0,0,0.82);
+}
+button:hover{
+	font-weight: bold;
+	transform: scale(1.1);
 }
