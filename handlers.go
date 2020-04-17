@@ -90,7 +90,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 			session.Values["authenticated"] = false
 			session.Save(r, w)
 
-			http.Redirect(w, r, "/login", http.StatusUnauthorized)
+			http.Redirect(w, r, "", http.StatusUnauthorized)
 		}
 
 		session.Values["Authenticated"] = true
@@ -111,7 +111,9 @@ func login(w http.ResponseWriter, r *http.Request) {
 func thanks(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("thanks.html"))
 
-	//add button for redirecting to the login page
+	if r.FormValue("login") == "Log in" {
+		http.Redirect(w, r, "/login", http.StatusPermanentRedirect)
+	}
 	tmpl.Execute(w, nil)
 }
 
