@@ -101,7 +101,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 		session.Save(r, w)
 
-		http.Redirect(w, r, "/home", http.StatusPermanentRedirect)
+		http.Redirect(w, r, "/home", http.StatusFound)
 	}
 
 	tmpl.Execute(w, nil)
