@@ -10,6 +10,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/gorilla/sessions"
+	"github.com/rs/xid"
 )
 
 type User struct {
@@ -90,7 +91,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 			session.Values["authenticated"] = false
 			session.Save(r, w)
 
-			http.Redirect(w, r, "/login", http.StatusUnauthorized)
+			http.Redirect(w, r, "", http.StatusUnauthorized)
 		}
 
 		session.Values["Authenticated"] = true
@@ -101,7 +102,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 		session.Save(r, w)
 
-		http.Redirect(w, r, "/home", http.StatusPermanentRedirect)
+		http.Redirect(w, r, "/home", http.StatusFound)
 	}
 
 	tmpl.Execute(w, nil)
@@ -111,7 +112,9 @@ func login(w http.ResponseWriter, r *http.Request) {
 func thanks(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("thanks.html"))
 
-	//add button for redirecting to the login page
+	if r.FormValue("login") == "Log in" {
+		http.Redirect(w, r, "/login", http.StatusPermanentRedirect)
+	}
 	tmpl.Execute(w, nil)
 }
 
@@ -134,12 +137,26 @@ func home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//user templating here somehow
 	user := User{
 		Username: session.Values["Username"].(string),
 		Email:    session.Values["Email"].(string),
 		Password: session.Values["Password"].(string),
 		ID:       session.Values["ID"].(int),
+	}
+
+	if r.FormValue("PostButton") == "Send" {
+
+		//add post to the database
+		guid := xid.New()
+		query := fmt.Sprintf("INSERT INTO posts(id, text, owner, likes) VALUES('%s', '%s', '%s', 0)", guid.String(), r.FormValue("text"), user.Username)
+
+		rows, err := db.Query(query)
+		if err != nil {
+			panic(err)
+		}
+
+		defer rows.Close()
+
 	}
 
 	tmpl.Execute(w, user)
