@@ -7,7 +7,7 @@
 
 <body>
 	
-  <h2>Welcome to home page {{ .Username }}</h2>
+  <h2>Welcome to home page {{ .Owner.Username }}</h2>
   <h3>All Shritts you can see below</h3>		
 
 	
@@ -17,9 +17,12 @@
     <p><input type="submit" name="PostButton" value="Send"></p>
   </form>
 <nav>
-  <ul><h1>
-    <li></li>
-    <li></li>
+  <ul>
+    <h1>
+      {{range .Posts}}
+      <li>{{.Text}}</li>
+      <li>{{.Likes}}</li>
+      {{end}}
 	  </h1>
   </ul>
 </nav>
