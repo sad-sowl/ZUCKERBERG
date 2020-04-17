@@ -10,6 +10,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/gorilla/sessions"
+	"github.com/rs/xid"
 )
 
 type User struct {
@@ -136,12 +137,26 @@ func home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//user templating here somehow
 	user := User{
 		Username: session.Values["Username"].(string),
 		Email:    session.Values["Email"].(string),
 		Password: session.Values["Password"].(string),
 		ID:       session.Values["ID"].(int),
+	}
+
+	if r.FormValue("PostButton") == "Send" {
+
+		//add post to the database
+		guid := xid.New()
+		query := fmt.Sprintf("INSERT INTO posts(id, text, owner, likes) VALUES('%s', '%s', '%s', 0)", guid.String(), r.FormValue("text"), user.Username)
+
+		rows, err := db.Query(query)
+		if err != nil {
+			panic(err)
+		}
+
+		defer rows.Close()
+
 	}
 
 	tmpl.Execute(w, user)
