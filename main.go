@@ -22,6 +22,7 @@ func main() {
 	http.HandleFunc("/login", login)
 	http.HandleFunc("/thanks", thanks)
 	http.HandleFunc("/home", home)
+	http.HandleFunc("/", login)
 
 	fmt.Println("Listening...")
 	http.ListenAndServe(":8000", nil)
