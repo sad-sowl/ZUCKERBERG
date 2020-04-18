@@ -67,6 +67,25 @@ nav ul {
   padding: 25px 0;
   background-color: rgba(9,96,5,0.91);
 }
+input
+{
+	border-radius:20px/20px;
+	border: none;
+	font-family: "Comic Sans MS";
+	cursor: pointer;
+	padding: 10px 20px;
+	height: 40px;
+	color:aliceblue;
+	background: rgba(21,73,3,1.00);
+	text-transform: uppercase;
+	font-size: 15px;
+	box-shadow: 2px 2px 5px rgba(0,0,0,0.82);
+}
+input:hover{
+	font-weight: bold;
+	transform: scale(1.1);
+}
+
 h2,
 h3{
 	color: black;
