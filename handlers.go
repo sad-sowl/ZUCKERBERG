@@ -14,7 +14,7 @@ import (
 )
 
 type User struct {
-	ID       int
+	ID       string
 	Email    string
 	Password string
 	Username string
@@ -73,8 +73,10 @@ func logup(w http.ResponseWriter, r *http.Request) {
 		if password1 != password2 || !isValidEmail(email) || isInDatabase(email, username) {
 			w.WriteHeader(http.StatusUnauthorized)
 		} else {
+
+			guid := xid.New()
 			//Create new user and add it to database
-			query := fmt.Sprintf("INSERT INTO users(email, password, username) VALUES('%s', '%s', '%s')", email, password1, username)
+			query := fmt.Sprintf("INSERT INTO users(id, email, password, username) VALUES('%s', '%s', '%s', '%s')", guid.String(), email, password1, username)
 
 			rows, err := db.Query(query)
 			if err != nil {
@@ -114,7 +116,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 		session.Save(r, w)
 
-		http.Redirect(w, r, "/home", http.StatusFound)
+		http.Redirect(w, r, "/home", http.StatusPermanentRedirect)
 	}
 
 	tmpl.Execute(w, nil)
@@ -153,7 +155,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		Username: session.Values["Username"].(string),
 		Email:    session.Values["Email"].(string),
 		Password: session.Values["Password"].(string),
-		ID:       session.Values["ID"].(int),
+		ID:       session.Values["ID"].(string),
 	}
 
 	if r.FormValue("PostButton") == "Send" {
