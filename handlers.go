@@ -20,6 +20,18 @@ type User struct {
 	Username string
 }
 
+type Post struct {
+	ID    string
+	Text  string
+	Owner string
+	Likes int
+}
+
+type PostsOfUser struct {
+	Owner User
+	Posts []Post
+}
+
 var (
 	db    *sql.DB
 	key   = []byte("pL!,$C@jc)~!4>m%z&Mb;^I7OBW1X")
@@ -159,5 +171,29 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	tmpl.Execute(w, user)
+	//-----Search all post of logged in user's------------
+	query := fmt.Sprintf("SELECT * FROM posts WHERE owner = '%s'", user.Username)
+	rows, err := db.Query(query)
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+
+	var posts []Post
+	for rows.Next() {
+		var post Post
+
+		err := rows.Scan(&post.ID, &post.Text, &post.Owner, &post.Likes)
+		if err != nil {
+			panic(err)
+		}
+		posts = append(posts, post)
+	}
+
+	PostWithOwner := PostsOfUser{
+		Owner: user,
+		Posts: posts,
+	}
+
+	tmpl.Execute(w, PostWithOwner)
 }
