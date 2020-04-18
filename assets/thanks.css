@@ -23,7 +23,7 @@ form
 	padding: 20px;
 	box-shadow: 2px 2px 5px rgba(0,0,0,0.82);
 }
-button{
+input{
 	font-family: "Comic Sans MS";
 	cursor: pointer;
 	padding: 10px 20px;
@@ -35,7 +35,7 @@ button{
 	font-size: 15px;
 	box-shadow: 2px 2px 5px rgba(0,0,0,0.82);
 }
-button:hover{
+input:hover{
 	font-weight: bold;
 	transform: scale(1.1);
 }
