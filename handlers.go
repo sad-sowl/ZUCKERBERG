@@ -6,6 +6,9 @@ import (
 	"html/template"
 	"net/http"
 	"regexp"
+	"sort"
+	"strings"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 
@@ -21,10 +24,11 @@ type User struct {
 }
 
 type Post struct {
-	ID    string
-	Text  string
-	Owner string
-	Likes int
+	ID         string
+	Text       string
+	Owner      string
+	Likes      int
+	TimeOfPost string
 }
 
 type PostsOfUser struct {
@@ -160,9 +164,15 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 	if r.FormValue("PostButton") == "Send" {
 
+		timeOfPost := time.Now().String()
+
 		//add post to the database
 		guid := xid.New()
-		query := fmt.Sprintf("INSERT INTO posts(id, text, owner, likes) VALUES('%s', '%s', '%s', 0)", guid.String(), r.FormValue("text"), user.Username)
+
+		text := r.FormValue("text")
+		text = strings.ReplaceAll(text, "'", "''")
+
+		query := fmt.Sprintf("INSERT INTO posts(id, text, owner, likes, post_at) VALUES('%s', '%s', '%s', 0, '%s')", guid.String(), text, user.Username, timeOfPost[:19])
 
 		rows, err := db.Query(query)
 		if err != nil {
@@ -185,12 +195,17 @@ func home(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var post Post
 
-		err := rows.Scan(&post.ID, &post.Text, &post.Owner, &post.Likes)
+		err := rows.Scan(&post.ID, &post.Text, &post.Owner, &post.Likes, &post.TimeOfPost)
 		if err != nil {
 			panic(err)
 		}
 		posts = append(posts, post)
 	}
+
+	//output them regarding to the date so reverse the posts
+	sort.SliceStable(posts, func(i, j int) bool {
+		return posts[i].TimeOfPost > posts[j].TimeOfPost
+	})
 
 	PostWithOwner := PostsOfUser{
 		Owner: user,
