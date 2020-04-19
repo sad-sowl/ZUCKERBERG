@@ -20,7 +20,8 @@
   <ul>
     <h1>
       {{range .Posts}}
-      <li>{{.Text}} <br/> Likes: {{.Likes}} <br/> Written by {{ .Owner }}</li>
+      <li>{{.Text}} <br/> Likes: {{.Likes}} <br/> Written by {{ .Owner }} <br/>
+          {{.TimeOfPost}}</li>
       {{end}}
 	  </h1>
   </ul>
