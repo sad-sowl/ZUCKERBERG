@@ -14,17 +14,18 @@ import (
 )
 
 type User struct {
-	ID       int
+	ID       string
 	Email    string
 	Password string
 	Username string
 }
 
 type Post struct {
-	ID    string
-	Text  string
-	Owner string
-	Likes int
+	ID         string
+	Text       string
+	Owner      string
+	Likes      int
+	TimeOfPost string
 }
 
 type PostsOfUser struct {
@@ -73,8 +74,10 @@ func logup(w http.ResponseWriter, r *http.Request) {
 		if password1 != password2 || !isValidEmail(email) || isInDatabase(email, username) {
 			w.WriteHeader(http.StatusUnauthorized)
 		} else {
+
+			guid := xid.New()
 			//Create new user and add it to database
-			query := fmt.Sprintf("INSERT INTO users(email, password, username) VALUES('%s', '%s', '%s')", email, password1, username)
+			query := fmt.Sprintf("INSERT INTO users(id, email, password, username) VALUES('%s', '%s', '%s', '%s')", guid.String(), email, password1, username)
 
 			rows, err := db.Query(query)
 			if err != nil {
@@ -114,7 +117,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 		session.Save(r, w)
 
-		http.Redirect(w, r, "/home", http.StatusFound)
+		http.Redirect(w, r, "/home", http.StatusPermanentRedirect)
 	}
 
 	tmpl.Execute(w, nil)
@@ -128,72 +131,4 @@ func thanks(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusPermanentRedirect)
 	}
 	tmpl.Execute(w, nil)
-}
-
-func home(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("home.html"))
-
-	session, _ := store.Get(r, "UserCookie")
-
-	//if user is authorised, read his username and put it in html
-	if auth, ok := session.Values["Authenticated"].(bool); !auth || !ok {
-		errPage := template.Must(template.ParseFiles("error.html"))
-
-		err := struct {
-			Message string
-		}{
-			Message: "You need to authorise",
-		}
-
-		errPage.Execute(w, err)
-		return
-	}
-
-	user := User{
-		Username: session.Values["Username"].(string),
-		Email:    session.Values["Email"].(string),
-		Password: session.Values["Password"].(string),
-		ID:       session.Values["ID"].(int),
-	}
-
-	if r.FormValue("PostButton") == "Send" {
-
-		//add post to the database
-		guid := xid.New()
-		query := fmt.Sprintf("INSERT INTO posts(id, text, owner, likes) VALUES('%s', '%s', '%s', 0)", guid.String(), r.FormValue("text"), user.Username)
-
-		rows, err := db.Query(query)
-		if err != nil {
-			panic(err)
-		}
-
-		defer rows.Close()
-
-	}
-
-	//-----Search all post of logged in user's------------
-	query := fmt.Sprintf("SELECT * FROM posts WHERE owner = '%s'", user.Username)
-	rows, err := db.Query(query)
-	if err != nil {
-		panic(err)
-	}
-	defer rows.Close()
-
-	var posts []Post
-	for rows.Next() {
-		var post Post
-
-		err := rows.Scan(&post.ID, &post.Text, &post.Owner, &post.Likes)
-		if err != nil {
-			panic(err)
-		}
-		posts = append(posts, post)
-	}
-
-	PostWithOwner := PostsOfUser{
-		Owner: user,
-		Posts: posts,
-	}
-
-	tmpl.Execute(w, PostWithOwner)
 }
