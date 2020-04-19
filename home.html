@@ -20,8 +20,9 @@
   <ul>
     <h1>
       {{range .Posts}}
-      <li>{{.Text}} <br/> Likes: {{.Likes}} <br/> Written by {{ .Owner }} <br/>
-          {{ .TimeOfPost}}</li>
+		<input type="submit" name="DeletPostButton" value="Delet">
+      <li>{{.Text}}</li>
+      <li>{{.Likes}}</li>
       {{end}}
 	  </h1>
   </ul>
