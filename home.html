@@ -20,9 +20,7 @@
   <ul>
     <h1>
       {{range .Posts}}
-		<input type="submit" name="DeletPostButton" value="Delet">
-      <li>{{.Text}}</li>
-      <li>{{.Likes}}</li>
+      <li>{{.Text}} <br/> {{.Likes}} <input type="submit" name="DeletPostButton" value="Delete Post" style="float: right;"> </li>
       {{end}}
 	  </h1>
   </ul>
