@@ -11,7 +11,7 @@ import (
 func main() {
 
 	var err error
-	db, err = sql.Open("mysql", "root:Qwerty0106@tcp(127.0.0.1:3306)/users")
+	db, err = sql.Open("mysql", "root:*PASSWORD*@tcp(127.0.0.1:3306)/users")
 	if err != nil {
 		panic(err)
 	}
